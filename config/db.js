@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const MONGO_URI = "mongodb+srv://arunkumargrewal:India%40123@cluster0.lnfxcag.mongodb.net/task_manager";
+const MONGO_URI = "mongodb+srv://arunkumargrewal:India%40135@cluster0.lnfxcag.mongodb.net/task_manager";
 //const  MONGO_URI = "mongodb://127.0.0.1:27017/task_manager"
 const connectDB = async () => {
   try {
