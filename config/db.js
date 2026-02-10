@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
-
+const MONGO_URI = "mongodb+srv://arunkumargrewal:India%40123@cluster0.lnfxcag.mongodb.net/?appName=Cluster0";
+//const  MONGO_URI = "mongodb://127.0.0.1:27017/task_manager"
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/task_manager");
+    await mongoose.connect(MONGO_URI);
 
     console.log("MongoDB connected successfully");
   } catch (error) {
