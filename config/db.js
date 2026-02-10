@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const MONGO_URI = "mongodb+srv://arunkumargrewal:India%40135@cluster0.lnfxcag.mongodb.net?appName=Cluster0";
+const MONGO_URI = "mongodb+srv://Vercel-Admin-task-management:4qpJb4T4WSKzG0p2@task-management.sy9u0nn.mongodb.net/?retryWrites=true&w=majority";
 //const  MONGO_URI = "mongodb://127.0.0.1:27017/task_manager"
 const connectDB = async () => {
   console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
