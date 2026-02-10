@@ -7,7 +7,7 @@ const projectRoutes = require("./routes/project.routes");
 const taskRoutes = require("./routes/task.routes");
 const userRoutes = require("./routes/user.routes");
 
-await connectDB(); // connect to MongoDB
+connectDB(); // connect to MongoDB
 const app = express();
 
 app.use(express.json());
