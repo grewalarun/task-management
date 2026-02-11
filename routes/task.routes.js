@@ -5,6 +5,7 @@ const auth = require("../middleware/auth");
 const {
     createTask,
     getProjectTasks,
+    getSingleTask,
     updateTask,
     updateTaskStatus, 
     deleteTask,
@@ -15,6 +16,7 @@ const {
 // tasks
 router.post("/projects/:projectId/tasks", auth, createTask);
 router.get("/projects/:projectId/tasks", auth, getProjectTasks);
+router.get("/projects/:projectId/tasks/:taskId", auth, getSingleTask);
 router.patch("/projects/:projectId/tasks/:taskId", auth, updateTask);
 router.delete("/projects/:projectId/tasks/:taskId", auth, deleteTask);
 

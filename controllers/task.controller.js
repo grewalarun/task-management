@@ -68,6 +68,29 @@ const getProjectTasks = async (req, res) => {
   }
 };
 
+// GET SINGLE TASK
+const getSingleTask = async (req, res) => {
+  try {
+    const { projectId, taskId } = req.params;
+
+    const task = await Task.findOne({
+      _id: taskId,
+      project: projectId,
+    })
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email")
+      .populate("updatedBy", "name email");
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json(task);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch task" });
+  }
+};
 
 // Update Task (STRICT workflow)
 
@@ -232,6 +255,7 @@ const getComments = async (req, res) => {
 module.exports = { 
     createTask,
     getProjectTasks,
+    getSingleTask,
     updateTask,
     updateTaskStatus,
     deleteTask,
