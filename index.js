@@ -27,7 +27,7 @@ app.use("/projects", projectRoutes);
 app.use("/", taskRoutes); // for nested task routes
 
 // admin route
-app.use("/", userRoutes);
+app.use("/users", userRoutes);
 
 app.listen(3100, () => {
   console.log("Server is running on port 3100");

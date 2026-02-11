@@ -4,6 +4,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const role = require("../middleware/role");
 const User = require("../models/User");
+const { getUsers } = require("../controllers/user.controller");
 
 router.patch(
   "/:id/role",
@@ -25,5 +26,7 @@ router.patch(
     res.json({ message: "Role updated", user });
   }
 );
+
+router.get("/", auth, getUsers);
 
 module.exports = router;
