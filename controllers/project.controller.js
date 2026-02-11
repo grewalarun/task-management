@@ -34,6 +34,20 @@ const getMyProjects = async (req, res) => {
 };
 
 
+// Get my Project detail
+
+const getMyProjectsDetail = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId);
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch projects" });
+  }
+};
+
+
+
 //Add Member to Project
 
 const addMember = async (req, res) => {
@@ -100,6 +114,7 @@ const deleteProject = async (req, res) => {
 module.exports = {
   createProject,
   getMyProjects,
+  getMyProjectsDetail,
   addMember,
   deleteProject
 };
