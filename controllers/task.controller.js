@@ -38,7 +38,7 @@ const createTask = async (req, res) => {
 
 const allowedTransitions = {
   todo: ["in-progress"],
-  "in-progress": ["done"],
+  "in-progress": ["todo", "done"],
   done: [],
 };
 
