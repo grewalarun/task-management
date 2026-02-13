@@ -22,14 +22,55 @@ const createProject = async (req, res) => {
 // Get my Project 
 
 const getMyProjects = async (req, res) => {
-  try {
-    const projects = await Project.find({
-      members: req.user._id,
-    }).populate("createdBy", "name email");
+try {
+   // const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    const projects = await Project.aggregate([
+      // 1️⃣ Only projects where user is a member
+      {
+        $match: {
+          members: req.user._id,
+        },
+      },
+
+      // 2️⃣ Count tasks efficiently (no full array load)
+      {
+        $lookup: {
+          from: "tasks",
+          let: { projectId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$project", "$$projectId"] },
+              },
+            },
+            { $count: "count" },
+          ],
+          as: "taskData",
+        },
+      },
+
+      // 3️⃣ Extract count safely
+      {
+        $addFields: {
+          taskCount: {
+            $ifNull: [{ $arrayElemAt: ["$taskData.count", 0] }, 0],
+          },
+        },
+      },
+
+      // 4️⃣ Remove temp array
+      {
+        $project: {
+          taskData: 0,
+        },
+      },
+    ]);
 
     res.json(projects);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch projects" });
+  } catch (error) {
+    console.error("Failed to fetch projects:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
