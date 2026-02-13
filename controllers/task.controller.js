@@ -77,6 +77,7 @@ const getSingleTask = async (req, res) => {
       _id: taskId,
       project: projectId,
     })
+      .populate("project", "name")
       .populate("assignedTo", "name email")
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
