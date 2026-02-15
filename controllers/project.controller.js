@@ -22,8 +22,8 @@ const createProject = async (req, res) => {
 // Get my Project 
 
 const getMyProjects = async (req, res) => {
-try {
-   // const userId = new mongoose.Types.ObjectId(req.user.id);
+  try {
+    // const userId = new mongoose.Types.ObjectId(req.user.id);
 
     const projects = await Project.aggregate([
       // 1️⃣ Only projects where user is a member
@@ -32,7 +32,27 @@ try {
           members: req.user._id,
         },
       },
-
+      //added member name and email
+      {
+        $lookup: {
+          from: "users",
+          let: { memberIds: "$members" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$_id", "$$memberIds"] },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                email: 1,
+              },
+            },
+          ],
+          as: "members",
+        },
+      },
       // 2️⃣ Count tasks efficiently (no full array load)
       {
         $lookup: {

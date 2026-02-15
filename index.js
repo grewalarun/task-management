@@ -20,7 +20,7 @@ app.use(
     credentials: true,
   })
 );
-app.options("*", cors());
+app.options(/.*/, cors());
 // 🔹 use routes
 app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);
