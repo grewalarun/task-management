@@ -68,6 +68,35 @@ const getProjectTasks = async (req, res) => {
   }
 };
 
+
+// Get tasks of logged-in user
+
+const getUserTasks = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { status } = req.query;
+    
+    let filter = {};
+    if (req.user.role !== "admin") {
+      filter.assignedTo = req.user.id;
+    }
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const tasks = await Task.find(filter)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch tasks" });
+  }
+};
+
+
 // GET SINGLE TASK
 const getSingleTask = async (req, res) => {
   try {
@@ -256,6 +285,7 @@ const getComments = async (req, res) => {
 module.exports = { 
     createTask,
     getProjectTasks,
+    getUserTasks,
     getSingleTask,
     updateTask,
     updateTaskStatus,
