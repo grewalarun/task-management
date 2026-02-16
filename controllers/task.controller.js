@@ -115,7 +115,7 @@ const getSingleTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    res.json(task);
+    res.status(200).json(task);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to fetch task" });
