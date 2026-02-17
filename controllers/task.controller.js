@@ -6,7 +6,7 @@ const { default: mongoose } = require("mongoose");
 const createTask = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { title, description, assignedTo } = req.body;
+    const { title, description, assignedTo, status } = req.body;
 
     const project = await Project.findById(projectId);
 
@@ -23,6 +23,7 @@ const createTask = async (req, res) => {
       description,
       project: projectId,
       assignedTo,
+      status,
       createdBy: req.user._id,
       dueDate,
       priority
@@ -30,8 +31,7 @@ const createTask = async (req, res) => {
 
     res.status(201).json(task);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Failed to create task" });
+    res.status(500).json({ message: "Failed to create task", err });
   }
 };
 
