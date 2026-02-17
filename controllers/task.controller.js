@@ -130,7 +130,7 @@ const getSingleTask = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
-    const { status, title, description, assignedTo } = req.body;
+    const { status, title, description, assignedTo, dueDate, priority } = req.body;
 
     const task = await Task.findById(taskId);
     if (!task || task.project.toString() !== projectId) {
