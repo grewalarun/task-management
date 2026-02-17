@@ -100,7 +100,7 @@ const getMyProjects = async (req, res) => {
 const getMyProjectsDetail = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const project = await Project.findById(projectId);
+    const project = await Project.findById(projectId).populate("members", "name email role") ;
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch projects" });
