@@ -161,7 +161,8 @@ const updateTask = async (req, res) => {
     if (title) task.title = title;
     if (description) task.description = description;
     if (assignedTo) task.assignedTo = assignedTo;
-
+    if (priority) task.priority = priority;
+    if (dueDate) task.dueDate = dueDate;
     task.updatedBy = req.user._id;
     await task.save();
 
