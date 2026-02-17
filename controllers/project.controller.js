@@ -143,6 +143,54 @@ const addMember = async (req, res) => {
   }
 };
 
+// Remove Member from Project
+
+const removeMember = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check permission (admin or creator)
+    const isAdmin =
+      project.admins.includes(req.user._id) ||
+      project.createdBy.equals(req.user._id);
+
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
+    // Prevent removing project creator
+    if (project.createdBy.equals(userId)) {
+      return res.status(400).json({
+        message: "Cannot remove project creator",
+      });
+    }
+
+    // Check if user is actually a member
+    if (!project.members.includes(userId)) {
+      return res.status(400).json({
+        message: "User is not a member",
+      });
+    }
+
+    // Atomic remove
+    await Project.findByIdAndUpdate(
+      projectId,
+      { $pull: { members: userId } },
+      { new: true }
+    );
+
+    res.json({ message: "Member removed successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to remove member" });
+  }
+};
 
 // Delete Project (Creator / Admin only)
 
@@ -177,5 +225,6 @@ module.exports = {
   getMyProjects,
   getMyProjectsDetail,
   addMember,
+  removeMember,
   deleteProject
 };
