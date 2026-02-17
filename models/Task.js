@@ -33,7 +33,7 @@ const taskSchema = new mongoose.Schema(
       default: "low",
     },
     dueDate: {
-      type: Date,
+      type: String,
       default: null,
     },
 
