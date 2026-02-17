@@ -24,6 +24,8 @@ const createTask = async (req, res) => {
       project: projectId,
       assignedTo,
       createdBy: req.user._id,
+      dueDate,
+      priority
     });
 
     res.status(201).json(task);

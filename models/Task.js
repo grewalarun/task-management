@@ -27,6 +27,16 @@ const taskSchema = new mongoose.Schema(
       default: "todo",
     },
 
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "low",
+    },
+    dueDate: {
+      type: Date,
+      default: null,
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -40,5 +50,5 @@ const taskSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-module.exports =  mongoose.model("Task", taskSchema);
+module.exports = mongoose.model("Task", taskSchema);
 
