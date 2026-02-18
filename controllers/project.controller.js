@@ -20,79 +20,84 @@ const createProject = async (req, res) => {
 
 
 // Get my Project 
-
 const getMyProjects = async (req, res) => {
   try {
-    // const userId = new mongoose.Types.ObjectId(req.user.id);
-
     const projects = await Project.aggregate([
       // 1️⃣ Only projects where user is a member
       {
-        $match: {
-          members: req.user._id,
-        },
+        $match: { members: req.user._id },
       },
-      //added member name and email
+
+      // 2️⃣ Populate members
       {
         $lookup: {
           from: "users",
           let: { memberIds: "$members" },
           pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$memberIds"] },
-              },
-            },
-            {
-              $project: {
-                name: 1,
-                email: 1,
-              },
-            },
+            { $match: { $expr: { $in: ["$_id", "$$memberIds"] } } },
+            { $project: { name: 1, email: 1 } },
           ],
           as: "members",
         },
       },
-      // 2️⃣ Count tasks efficiently (no full array load)
+
+      // 3️⃣ Group tasks by status
       {
         $lookup: {
           from: "tasks",
           let: { projectId: "$_id" },
           pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$project", "$$projectId"] },
-              },
-            },
-            { $count: "count" },
+            { $match: { $expr: { $eq: ["$project", "$$projectId"] } } },
+            { $group: { _id: "$status", count: { $sum: 1 } } },
           ],
-          as: "taskData",
+          as: "taskStatsRaw",
         },
       },
 
-      // 3️⃣ Extract count safely
+      // 4️⃣ Convert to object + add defaults
       {
         $addFields: {
-          taskCount: {
-            $ifNull: [{ $arrayElemAt: ["$taskData.count", 0] }, 0],
+          taskStat: {
+            $mergeObjects: [
+              { todo: 0, done: 0, "in-progress": 0 },
+              {
+                $arrayToObject: {
+                  $map: {
+                    input: "$taskStatsRaw",
+                    as: "stat",
+                    in: ["$$stat._id", "$$stat.count"],
+                  },
+                },
+              },
+            ],
           },
         },
       },
 
-      // 4️⃣ Remove temp array
+      // 5️⃣ Add total
       {
-        $project: {
-          taskData: 0,
+        $addFields: {
+          "taskStat.total": {
+            $add: [
+              "$taskStat.todo",
+              "$taskStat.done",
+              "$taskStat.in-progress",
+            ],
+          },
         },
       },
-    ]);
 
-    res.json(projects);
+      // 6️⃣ Remove temp field
+      { $project: { taskStatsRaw: 0 } },
+    ])
+
+    res.json(projects)
   } catch (error) {
-    console.error("Failed to fetch projects:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Failed to fetch projects:", error)
+    res.status(500).json({ message: "Server error" })
   }
-};
+}
+
 
 
 // Get my Project detail

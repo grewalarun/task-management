@@ -29,7 +29,7 @@ const projectSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    taskCount: [],
+    taskStat: {total:Number, todo:Number, "in-progress":Number, done: Number},
   },
   { timestamps: true }
 );
