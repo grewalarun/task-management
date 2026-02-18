@@ -261,7 +261,7 @@ const addComment = async (req, res) => {
       task: taskId,
       text,
       createdBy: req.user._id,
-    });
+    }).populate("createdBy", "name email");
 
     res.status(201).json(comment);
   } catch (err) {
