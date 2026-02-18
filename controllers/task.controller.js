@@ -252,22 +252,38 @@ const addComment = async (req, res) => {
     const { projectId, taskId } = req.params;
     const { text } = req.body;
 
+    if (!text?.trim()) {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
+
     const project = await Project.findById(projectId);
-    if (!project || !project.members.includes(req.user._id)) {
+
+    if (
+      !project ||
+      !project.members.some((memberId) =>
+        memberId.equals(req.user._id)
+      )
+    ) {
       return res.status(403).json({ message: "Access denied" });
     }
 
+    // ✅ Create comment with createdBy
     const comment = await Comment.create({
       task: taskId,
-      text,
+      text: text.trim(),
       createdBy: req.user._id,
-    }).populate("createdBy", "name email");
+    });
+
+    // ✅ Populate AFTER creation
+    await comment.populate("createdBy", "name email");
 
     res.status(201).json(comment);
   } catch (err) {
+    console.error("Add comment error:", err);
     res.status(500).json({ message: "Failed to add comment" });
   }
 };
+
 
 
 //Get Comments
