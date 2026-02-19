@@ -55,16 +55,14 @@ const updateProject = async (req, res) => {
 // Get Projects (admin sees all, others see only member projects)
 const getMyProjects = async (req, res) => {
   try {
-    // Determine match condition
-    const matchCondition = req.user.isAdmin
-      ? {} // Admin: no filter, return all projects
-      : { members: req.user._id }; // Regular user: only projects where user is a member
+    // Admin sees all, else only projects where user is member
+    const matchCondition = req.user.isAdmin ? {} : { members: req.user._id };
 
     const projects = await Project.aggregate([
       // 1️⃣ Match projects
       { $match: matchCondition },
 
-      // 2️⃣ Populate members (name + email)
+      // 2️⃣ Populate members
       {
         $lookup: {
           from: "users",
@@ -90,40 +88,39 @@ const getMyProjects = async (req, res) => {
         },
       },
 
-      // 4️⃣ Convert taskStatsRaw to object + add defaults
+      // 4️⃣ Convert taskStatsRaw to object with defaults and total
       {
         $addFields: {
           taskStat: {
-            $mergeObjects: [
-              { todo: 0, done: 0, "in-progress": 0 },
-              {
-                $arrayToObject: {
-                  $map: {
-                    input: "$taskStatsRaw",
-                    as: "stat",
-                    in: ["$$stat._id", "$$stat.count"],
-                  },
+            $let: {
+              vars: {
+                statsObj: {
+                  $mergeObjects: [
+                    { todo: 0, done: 0, "in-progress": 0 },
+                    {
+                      $arrayToObject: {
+                        $map: {
+                          input: "$taskStatsRaw",
+                          as: "stat",
+                          in: ["$$stat._id", "$$stat.count"],
+                        },
+                      },
+                    },
+                  ],
                 },
               },
-            ],
+              in: {
+                $mergeObjects: [
+                  "$$statsObj",
+                  { total: { $sum: ["$$statsObj.todo", "$$statsObj.done", "$$statsObj.in-progress"] } },
+                ],
+              },
+            },
           },
         },
       },
 
-      // 5️⃣ Add total tasks
-      {
-        $addFields: {
-          "taskStat.total": {
-            $add: [
-              "$taskStat.todo",
-              "$taskStat.done",
-              "$taskStat['in-progress']",
-            ],
-          },
-        },
-      },
-
-      // 6️⃣ Remove temp field
+      // 5️⃣ Remove temporary field
       { $project: { taskStatsRaw: 0 } },
     ]);
 
@@ -133,6 +130,7 @@ const getMyProjects = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 
