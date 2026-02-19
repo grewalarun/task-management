@@ -52,17 +52,19 @@ const updateProject = async (req, res) => {
   }
 };
 
-
-// Get my Project 
+// Get Projects (admin sees all, others see only member projects)
 const getMyProjects = async (req, res) => {
   try {
-    const projects = await Project.aggregate([
-      // 1️⃣ Only projects where user is a member
-      {
-        $match: { members: req.user._id },
-      },
+    // Determine match condition
+    const matchCondition = req.user.isAdmin
+      ? {} // Admin: no filter, return all projects
+      : { members: req.user._id }; // Regular user: only projects where user is a member
 
-      // 2️⃣ Populate members
+    const projects = await Project.aggregate([
+      // 1️⃣ Match projects
+      { $match: matchCondition },
+
+      // 2️⃣ Populate members (name + email)
       {
         $lookup: {
           from: "users",
@@ -88,7 +90,7 @@ const getMyProjects = async (req, res) => {
         },
       },
 
-      // 4️⃣ Convert to object + add defaults
+      // 4️⃣ Convert taskStatsRaw to object + add defaults
       {
         $addFields: {
           taskStat: {
@@ -108,14 +110,14 @@ const getMyProjects = async (req, res) => {
         },
       },
 
-      // 5️⃣ Add total
+      // 5️⃣ Add total tasks
       {
         $addFields: {
           "taskStat.total": {
             $add: [
               "$taskStat.todo",
               "$taskStat.done",
-              "$taskStat.in-progress",
+              "$taskStat['in-progress']",
             ],
           },
         },
@@ -123,14 +125,14 @@ const getMyProjects = async (req, res) => {
 
       // 6️⃣ Remove temp field
       { $project: { taskStatsRaw: 0 } },
-    ])
+    ]);
 
-    res.json(projects)
+    res.json(projects);
   } catch (error) {
-    console.error("Failed to fetch projects:", error)
-    res.status(500).json({ message: "Server error" })
+    console.error("Failed to fetch projects:", error);
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
 
 
 
