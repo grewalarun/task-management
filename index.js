@@ -15,10 +15,14 @@ app.use(express.json());
 // cors fix
 
 app.use(
-  cors({
-    origin: "http://localhost:3000",
+  cors([{
+    origin: "http://localhost:3000", 
     credentials: true,
-  })
+  },
+{
+    origin: "next-taskmanager.netlify.app", 
+    credentials: true,
+  }])
 );
 app.options(/.*/, cors());
 // 🔹 use routes
