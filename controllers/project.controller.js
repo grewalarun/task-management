@@ -14,7 +14,40 @@ const createProject = async (req, res) => {
 
     res.status(201).json(project);
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: "Failed to create project" });
+  }
+};
+
+ // Edit project
+
+const updateProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { name, description } = req.body;
+
+    // Find project
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check if user is admin
+    if (!project.admins.includes(req.user._id)) {
+      return res.status(403).json({ message: "Not authorized to update this project" });
+    }
+
+    // Update fields (only if provided)
+    if (name !== undefined) project.name = name;
+    if (description !== undefined) project.description = description;
+
+    await project.save();
+
+    res.json(project);
+  } catch (err) {
+    console.error("Failed to update project:", err);
+    res.status(500).json({ message: "Failed to update project" });
   }
 };
 
@@ -228,6 +261,7 @@ const deleteProject = async (req, res) => {
 module.exports = {
   createProject,
   getMyProjects,
+  updateProject,
   getMyProjectsDetail,
   addMember,
   removeMember,
