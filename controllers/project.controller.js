@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const Task = require("../models/Task");
 
 const createProject = async (req, res) => {
   try {
@@ -231,7 +232,6 @@ const removeMember = async (req, res) => {
 };
 
 // Delete Project (Creator / Admin only)
-
 const deleteProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -242,21 +242,33 @@ const deleteProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
+    // Permission check (creator OR admin)
     const isAllowed =
       project.createdBy.equals(req.user._id) ||
-      project.admins.includes(req.user._id);
+      project.admins.some((adminId) => adminId.equals(req.user._id));
 
     if (!isAllowed) {
       return res.status(403).json({ message: "Not allowed" });
+    }
+
+    // 🚨 Check if tasks exist
+    const taskCount = await Task.countDocuments({ project: projectId });
+
+    if (taskCount > 0) {
+      return res.status(400).json({
+        message: `Please delete all (${taskCount}) tasks before deleting this project.`,
+      });
     }
 
     await project.deleteOne();
 
     res.json({ message: "Project deleted successfully" });
   } catch (err) {
+    console.error("Failed to delete project:", err);
     res.status(500).json({ message: "Failed to delete project" });
   }
 };
+
 
 module.exports = {
   createProject,
