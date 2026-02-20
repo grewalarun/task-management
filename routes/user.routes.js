@@ -13,7 +13,7 @@ router.patch(
   async (req, res) => {
     const { role } = req.body;
 
-    if (!["admin", "member"].includes(role)) {
+    if (!["admin", "manager" , "member"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
