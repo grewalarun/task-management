@@ -57,9 +57,9 @@ const getProjectTasks = async (req, res) => {
 
     const project = await Project.findById(projectId);
 
-    if (!project || !project.members.includes(req.user._id)) {
-      return res.status(403).json({ message: "Access denied" });
-    }
+    // if (!project || !project.members.includes(req.user._id)) {
+    //   return res.status(403).json({ message: "Access denied" });
+    // }
 
     const tasks = await Task.find({ project: projectId })
       .populate("assignedTo", "name email")
