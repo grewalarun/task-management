@@ -56,11 +56,11 @@ const updateProject = async (req, res) => {
 const getMyProjects = async (req, res) => {
   try {
     // Admin sees all, else only projects where user is member
-    const matchCondition = req.user.isAdmin ? {} : { members: req.user._id };
+   // const matchCondition = req.user.isAdmin ? {} : { members: req.user._id };
 
     const projects = await Project.aggregate([
       // 1️⃣ Match projects
-      { $match: matchCondition },
+    //  { $match: matchCondition },
 
       // 2️⃣ Populate members
       {
