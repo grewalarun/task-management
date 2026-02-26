@@ -55,7 +55,7 @@ const getUserProfile = async (req, res) => {
     }
 
     const tasks = await Task.find({ assignedTo: req.params.id })
-      .select("title status createdAt");
+      .select("title status createdAt project");
 
     res.json({
       avatar: user.avatar,
