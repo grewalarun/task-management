@@ -1,6 +1,10 @@
 const User = require("../models/User");
+const Task = require("../models/Task");
 const Project = require("../models/Project");
 const bcrypt = require("bcryptjs");
+
+
+// Get Users
 
 const getUsers = async (req, res) => {
   try {
@@ -40,6 +44,34 @@ const getUsers = async (req, res) => {
   }
 };
 
+
+// User profile
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const tasks = await Task.find({ assignedTo: req.params.id })
+      .select("title status createdAt");
+
+    res.json({
+      avatar: user.avatar,
+      name: user.name,
+      email: user.email,
+      memberSince: user.createdAt,
+      allocatedTasks: tasks
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// Update profile
+
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -75,6 +107,8 @@ const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Failed to update profile." });
   }
 };
+
+// Change password
 
 const changePassword = async (req, res) => {
   try {
@@ -118,7 +152,7 @@ const changePassword = async (req, res) => {
 };
 
 
-// update role
+// Update role
 
 const changeRole = async (req, res) => {
     const { role } = req.body;
@@ -141,5 +175,6 @@ module.exports = {
   getUsers,
   updateProfile,
   changePassword,
+  getUserProfile,
   changeRole
 };
