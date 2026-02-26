@@ -1,11 +1,12 @@
 const User = require("../models/User");
 const Project = require("../models/Project");
+const bcrypt = require("bcryptjs");
 
 const getUsers = async (req, res) => {
   try {
     const users = await User.find()
       .select("_id name email role")
-      .lean(); // 👈 improves performance
+      .lean();
 
     const userIds = users.map((u) => u._id);
 
@@ -15,7 +16,6 @@ const getUsers = async (req, res) => {
       .select("_id name members")
       .lean();
 
-    // Attach projects to each user
     const usersWithProjects = users.map((user) => {
       const userProjects = projects
         .filter((project) =>
@@ -40,6 +40,106 @@ const getUsers = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const userId = req.user._id; // assumes auth middleware attaches req.user
+
+    if (!name && !email) {
+      return res.status(400).json({ message: "Provide at least one field to update." });
+    }
+
+    const updates = {};
+    if (name) updates.name = name.trim();
+
+    //  if (email) updates.email = email.trim().toLowerCase();
+
+    // Check email uniqueness if updating email
+
+    // if (updates.email) {
+    //   const existing = await User.findOne({ email: updates.email, _id: { $ne: userId } });
+    //   if (existing) {
+    //     return res.status(409).json({ message: "Email is already in use." });
+    //   }
+    // }
+
+    const updated = await User.findByIdAndUpdate(userId, updates, { new: true })
+      .select("_id name email role");
+
+    if (!updated) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update profile." });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id; // assumes auth middleware attaches req.user
+
+    // --- Validation ---
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new passwords are required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "New password must be at least 8 characters." });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ message: "New password must differ from the current password." });
+    }
+
+    // --- Fetch user with password hash ---
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // --- Verify current password ---
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect." });
+    }
+
+    // --- Hash and save new password ---
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: "Password changed successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to change password." });
+  }
+};
+
+
+// update role
+
+const changeRole = async (req, res) => {
+    const { role } = req.body;
+
+    if (!["admin", "manager" , "member"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true }
+    );
+
+    res.json({ message: "Role updated", user });
+  }
+
+
 module.exports = {
   getUsers,
+  updateProfile,
+  changePassword,
+  changeRole
 };
