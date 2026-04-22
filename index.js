@@ -7,7 +7,7 @@ const authRoutes = require("./routes/auth.routes");
 const projectRoutes = require("./routes/project.routes");
 const taskRoutes = require("./routes/task.routes");
 const userRoutes = require("./routes/user.routes");
-
+const testtaskRoutes = require("./routes/testTask.routes");
 connectDB(); // connect to MongoDB
 const app = express();
 
@@ -29,7 +29,7 @@ app.options(/.*/, cors());
 app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);
 app.use("/", taskRoutes); // for nested task routes
-
+app.use("/test/", testtaskRoutes); // for nested task routes
 // admin route
 app.use("/users", userRoutes);
 
