@@ -19,6 +19,10 @@ app.use(
     origin: "http://localhost:3000", 
     credentials: true,
   },
+  {
+    origin: "http://localhost:5173/", 
+    credentials: true,
+  },
 {
     origin: "next-taskmanager.netlify.app", 
     credentials: true,
@@ -32,6 +36,9 @@ app.use("/", taskRoutes); // for nested task routes
 app.use("/test/", testtaskRoutes); // for nested task routes
 // admin route
 app.use("/users", userRoutes);
+
+
+
 
 app.listen(3100, () => {
   console.log("Server is running on port 3100");
